@@ -7,11 +7,9 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "contracts/utils/ERC20Factory.sol";
 
 struct Pool {
-  mapping(address => PoolInfo) info;
-}
-
-struct PoolInfo {
+  address erc20Address;
   uint256 weiWorth;
+  uint256 size;
   uint256 allowanceUsageLimit;
   mapping(address => uint256) allowances;
 }
@@ -32,36 +30,42 @@ contract Poola {
     ethAllowances[msg.sender] = ethAllowances[msg.sender].add(msg.value);
 
     // add the token allowance to the Pool
-    pools[_pool].info[_erc20Address].allowances[msg.sender] = pools[_pool].info[_erc20Address].allowances[msg.sender].add(_amount);
+    pools[_pool].allowances[msg.sender] = pools[_pool].allowances[msg.sender].add(_amount);
+    pools[_pool].size = pools[_pool].size.add(_amount);
 
     // sets how much 1 Wei can buy of this token
-    pools[_pool].info[_erc20Address].weiWorth = _amount.div(msg.value);
+    pools[_pool].weiWorth = _amount.div(msg.value);
 
     // deposit the amount of the token
+    pools[_pool].erc20Address = _erc20Address;
     IERC20 token = factory.getErc20(_erc20Address);
     require(token.transfer(address(this), _amount));
   }
 
-  function tradeWithEth(string memory _pool, address _erc20Address, uint256 _amount) public {
+  function tradeWithEth(string memory _pool, uint256 _amount) public {
     // substracts the allowance
     ethAllowances[msg.sender] = ethAllowances[msg.sender].sub(_amount);
 
     // transfers the token to the sender's address
-    uint256 weiWorth = pools[_pool].info[_erc20Address].weiWorth;
-    IERC20 token = factory.getErc20(_erc20Address);
+    uint256 weiWorth = pools[_pool].weiWorth;
+    IERC20 token = factory.getErc20(pools[_pool].erc20Address);
     uint256 amountToTransfer = _amount.mul(weiWorth);
     require(token.transfer(msg.sender, amountToTransfer));
   }
 
-  function getWeiWorth(string memory _pool, address _erc20Address) public view returns(uint256 _price) {
-    return pools[_pool].info[_erc20Address].weiWorth;
+  function getPoolSize(string memory _pool) public view returns(uint256 _size) {
+    return pools[_pool].size;
+  }
+
+  function getWeiWorth(string memory _pool) public view returns(uint256 _price) {
+    return pools[_pool].weiWorth;
   }
 
   function myEthAllowance() public view returns (uint256 _allowance) {
     return ethAllowances[msg.sender];
   }
 
-  function myTokenAllowance(string memory _pool, address _erc20Address) public view returns (uint256 _allowance) {
-    return pools[_pool].info[_erc20Address].allowances[msg.sender];
+  function myTokenAllowance(string memory _pool) public view returns (uint256 _allowance) {
+    return pools[_pool].allowances[msg.sender];
   }
 }
