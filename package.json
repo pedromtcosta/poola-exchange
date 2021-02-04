@@ -15,6 +15,7 @@
   },
   "scripts": {
     "build": "npx hardhat compile",
-    "test": "npx hardhat test"
+    "deploy": "npx hardhat run scripts/deploy.ts --network localhost",
+    "test": "npx hardhat compile && npx hardhat test"
   }
 }

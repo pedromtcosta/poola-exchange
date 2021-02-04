@@ -3,12 +3,18 @@ import { run, ethers } from "hardhat";
 async function main() {
   await run("compile");
   
-  const Greeter = await ethers.getContractFactory("Greeter");
-  const greeter = await Greeter.deploy("Hello, Hardhat!");
+  const ERC20Factory = await ethers.getContractFactory("ERC20Factory");
+  const erc20Factory = await ERC20Factory.deploy(["0x67C483918F8221BADa4B12B8c01b427338F6b779"]);
 
-  await greeter.deployed();
+  await erc20Factory.deployed();
 
-  console.log("Greeter deployed to:", greeter.address);
+  const Poola = await ethers.getContractFactory("Poola");
+  const poola = await Poola.deploy(erc20Factory.address);
+
+  await poola.deployed();
+
+  console.log("ERC20Factory deployed to:", erc20Factory.address);
+  console.log("Poola deployed to:", poola.address);
 }
 
 main()
