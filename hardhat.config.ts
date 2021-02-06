@@ -1,4 +1,4 @@
-import { task } from "hardhat/config";
+import { extendEnvironment, task } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle";
 
 import poola from "./artifacts/contracts/Poola.sol/Poola.json";

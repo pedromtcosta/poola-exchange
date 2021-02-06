@@ -1,70 +1,80 @@
 import { ethers, waffle } from "hardhat";
-import { ContractFactory, BigNumber, Contract } from "ethers";
-import { expect } from "chai";
+import { Contract } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { deployContract, MockContract } from "ethereum-waffle";
+import { MockContract } from "ethereum-waffle";
+import { Pool } from "../../models/Pool";
 
 import Poola from "../../artifacts/contracts/Poola.sol/Poola.json";
 import IERC20Factory from "../../artifacts/contracts/utils/ERC20Factory.sol/IERC20Factory.json";
 import IERC20 from "../../artifacts/@openzeppelin/contracts/token/ERC20/IERC20.sol/IERC20.json";
-import { Pool } from "../../models/Pool";
+import DummyToken from "../../artifacts/contracts/utils/DummyToken.sol/DummyToken.json";
 
 const deployMockContract = waffle.deployMockContract;
+const deployContract = waffle.deployContract;
 
 export class PoolaFacade {
-  poola: Contract;
-  erc20Factory: MockContract;
-  accounts: SignerWithAddress[];
-  contexts: { [address: string]: Contract } = {};
+  private _obj: Contract;
+  private _erc20Factory: MockContract;
+  private _accounts: SignerWithAddress[];
+  private _contexts: { [address: string]: Contract } = {};
 
-  getPoola(): Contract {
-    return this.poola;
+  get obj(): Contract {
+    return this._obj;
   }
 
-  getFactory(): MockContract {
-    return this.erc20Factory;
+  get accounts(): SignerWithAddress[] {
+    return this._accounts;
   }
 
-  constructor(poola: Contract, erc20Factory: MockContract, accounts: SignerWithAddress[]) {
-    this.poola = poola;
-    this.erc20Factory = erc20Factory;
-    this.accounts = accounts;
-    this.contexts[accounts[0].address] = poola;
+  constructor(obj: Contract, erc20Factory: MockContract, accounts: SignerWithAddress[]) {
+    this._obj = obj;
+    this._erc20Factory = erc20Factory;
+    this._accounts = accounts;
+    this._contexts[accounts[0].address] = this._obj;
   }
 
   static async init(): Promise<PoolaFacade> {
     const accounts = await ethers.getSigners();
 
     const erc20Factory = await deployMockContract(accounts[0], IERC20Factory.abi);
-    const contractFactory = new ContractFactory(Poola.abi, Poola.bytecode, accounts[0]);
-    const poola = await contractFactory.deploy(erc20Factory.address);
+    const poola = await deployContract(accounts[0], Poola, [erc20Factory.address]);
 
     return new PoolaFacade(poola, erc20Factory, accounts);
   }
 
   async addToken(deployerIndex: number = 0): Promise<MockContract> {
     const token = await deployMockContract(this.accounts[deployerIndex], IERC20.abi);
-    this.erc20Factory.mock.getErc20.withArgs(token.address).returns(token.address);
+    this._erc20Factory.mock.getErc20.withArgs(token.address).returns(token.address);
+    return token;
+  }
+
+  async addActualToken(deployerIndex: number = 0, initialBalance: string = "1000000000000000000000"): Promise<Contract> {
+    const token = await deployContract(this.accounts[deployerIndex], DummyToken, [this.accounts[deployerIndex].address, initialBalance]);
+    this._erc20Factory.mock.getErc20.withArgs(token.address).returns(token.address);
     return token;
   }
 
   async addPool(poolName: string, tokenAddress: string, withdrawMultiplier: number): Promise<Pool> {
-    await this.poola.functions.createPool(poolName, tokenAddress, withdrawMultiplier);
-    const pool: Pool = await this.poola.functions.pools(poolName);
+    await this._obj.functions.createPool(poolName, tokenAddress, withdrawMultiplier);
+    return await this.getPool(poolName);
+  }
+
+  async getPool(poolName: string): Promise<Pool> {
+    const pool: Pool = await this._obj.functions.pools(poolName);
     return pool;
   }
 
   async execAs<T>(accountIndex: number, f: (x: Contract) => Promise<T>): Promise<T> {
-    if (!this.contexts[this.accounts[accountIndex].address]) {
-      this.contexts[this.accounts[accountIndex].address] = this.poola.connect(this.accounts[accountIndex]);
+    if (!this._contexts[this.accounts[accountIndex].address]) {
+      this._contexts[this.accounts[accountIndex].address] = this._obj.connect(this.accounts[accountIndex]);
     }
-    return await f(this.contexts[this.accounts[accountIndex].address]);
+    return await f(this._contexts[this.accounts[accountIndex].address]);
   }
 
   execAllAs(accountIndex: number) {
-    if (!this.contexts[this.accounts[accountIndex].address]) {
-      this.contexts[this.accounts[accountIndex].address] = this.poola.connect(this.accounts[accountIndex]);
+    if (!this._contexts[this.accounts[accountIndex].address]) {
+      this._contexts[this.accounts[accountIndex].address] = this._obj.connect(this.accounts[accountIndex]);
     }
-    this.poola = this.contexts[this.accounts[accountIndex].address];
+    this._obj = this._contexts[this.accounts[accountIndex].address];
   }
 }

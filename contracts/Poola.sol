@@ -41,6 +41,11 @@ contract Poola {
     require(_amount >= pool.pricePerWei, "Cannot deposit less than the pool's pricePerWei");
     require(_amount % pool.pricePerWei == 0, "Deposit amount should be divisible by pool's pricePerWei");
     require(_amount.div(pool.pricePerWei) == msg.value, "The paid amount should be equal to amount / pricePerWei");
+
+    pool.size = pool.size.add(_amount);
+
+    IERC20 token = factory.getErc20(pool.erc20Address);
+    require(token.transferFrom(msg.sender, address(this), _amount));
   }
 
   // function deposit(string memory _pool, address _erc20Address, uint256 _amount) public payable {    
