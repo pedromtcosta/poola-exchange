@@ -98,6 +98,45 @@ describe("Poola", function () {
       expect(pool.size).to.equal(2000);
     })
 
+    it("should add pool owner's allowance", async function() {
+      const poolName = "TestPool";
+
+      const facade = await PoolaFacade.init();
+      const token = await facade.addToken();
+      await facade.addPool(poolName, token.address, 100);
+
+      await token.mock.transferFrom.returns(true);
+
+      await facade.obj.functions.deposit(poolName, 1000, {
+        value: 10
+      });
+
+      const allowance = await facade.getAllowance(facade.accounts[0].address);
+
+      expect(allowance).to.equal(10);
+    });
+
+    it("should increase pool owner's allowance", async function() {
+      const poolName = "TestPool";
+
+      const facade = await PoolaFacade.init();
+      const token = await facade.addToken();
+      await facade.addPool(poolName, token.address, 100);
+
+      await token.mock.transferFrom.returns(true);
+
+      await facade.obj.functions.deposit(poolName, 1000, {
+        value: 10
+      });
+      await facade.obj.functions.deposit(poolName, 1000, {
+        value: 10
+      });
+
+      const allowance = await facade.getAllowance(facade.accounts[0].address);
+
+      expect(allowance).to.equal(20);
+    });
+
     describe("constraints", function() {
       it("should not allow deposit to inexistent pool", async function() {
         const facade = await PoolaFacade.init();

@@ -16,7 +16,7 @@ struct Pool {
 contract Poola {
   using SafeMath for uint256;
 
-  mapping(address => uint256) public ethAllowances;
+  mapping(address => uint256) public allowances;
   mapping(string => Pool) public pools;
 
   IERC20Factory factory;
@@ -43,6 +43,7 @@ contract Poola {
     require(_amount.div(pool.pricePerWei) == msg.value, "The paid amount should be equal to amount / pricePerWei");
 
     pool.size = pool.size.add(_amount);
+    allowances[msg.sender] = allowances[msg.sender].add(msg.value);
 
     IERC20 token = factory.getErc20(pool.erc20Address);
     require(token.transferFrom(msg.sender, address(this), _amount));
