@@ -1,5 +1,5 @@
 import { ethers, waffle } from "hardhat";
-import { Contract } from "ethers";
+import { BigNumber, Contract } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { MockContract } from "ethereum-waffle";
 import { Pool } from "../../models/Pool";
@@ -54,8 +54,8 @@ export class PoolaFacade {
     return token;
   }
 
-  async addPool(poolName: string, tokenAddress: string, pricePerWei: number): Promise<Pool> {
-    await this._obj.functions.createPool(poolName, tokenAddress, pricePerWei);
+  async addPool(poolName: string, tokenAddress: string, pricePerWei: number, poolOwnerIndex: number = 0): Promise<Pool> {
+    await this.execAs(poolOwnerIndex, x => x.functions.createPool(poolName, tokenAddress, pricePerWei));
     return await this.getPool(poolName);
   }
 
@@ -64,11 +64,25 @@ export class PoolaFacade {
     return pool;
   }
 
+  async getAllowance(account: string): Promise<BigNumber> {
+    const allowance: BigNumber = (await this._obj.functions.allowances(account))[0];
+    return allowance;
+  }
+
   async execAs<T>(accountIndex: number, f: (x: Contract) => Promise<T>): Promise<T> {
     if (!this._contexts[this.accounts[accountIndex].address]) {
       this._contexts[this.accounts[accountIndex].address] = this._obj.connect(this.accounts[accountIndex]);
     }
     return await f(this._contexts[this.accounts[accountIndex].address]);
+  }
+
+  async getLastTransactionCost(): Promise<BigNumber> {
+    const currentBlockNumber = await this.obj.provider.getBlockNumber();
+    const currentBlock = await this.obj.provider.getBlockWithTransactions(currentBlockNumber);
+    const transaction = currentBlock.transactions[0];
+    const transactionReceipt = await this.obj.provider.getTransactionReceipt(transaction.hash);
+    const transactionCost = transactionReceipt.gasUsed.mul(transaction.gasPrice);
+    return transactionCost;
   }
 
   execAllAs(accountIndex: number) {

@@ -48,4 +48,35 @@ contract Poola {
     IERC20 token = factory.getErc20(pool.erc20Address);
     require(token.transferFrom(msg.sender, address(this), _amount));
   }
+
+  function buyFromPool(string memory _pool, uint256 _amount) public payable {
+    Pool storage pool = pools[_pool];
+    require(pool.owner != address(0), "Cannot buy from inexistent pool");
+    require(_amount > 0, "The amount has to be greater than 0");
+    require(_amount <= pool.size, "The amount cannot be greater than the pool size");
+    require(_amount % pool.pricePerWei == 0, "The amount is not a multiplier of the pool's pricePerWei");
+
+    uint256 value = msg.value;
+    if (value == 0) {
+      value = _amount.div(pool.pricePerWei);
+      require(allowances[msg.sender] >= value, "You need to have allowance to buy without transfering Wei");
+
+      allowances[msg.sender] = allowances[msg.sender].sub(value);
+    } else {
+      require(pool.pricePerWei.mul(value) == _amount, "The paid value doesn't match the requested buying amount");
+    }
+
+    pool.size = pool.size.sub(_amount);
+    allowances[pool.owner] = allowances[pool.owner].add(value);
+
+    IERC20 token = factory.getErc20(pool.erc20Address);
+    require(token.transfer(msg.sender, _amount));
+  }
+
+  function withdraw(uint256 _amount) public {
+    require(allowances[msg.sender] >= _amount, "Cannot withdraw more than allowance");
+    allowances[msg.sender] = allowances[msg.sender].sub(_amount);
+    (bool success, ) = msg.sender.call{value:_amount}("");
+    require(success, "Transfer failed");
+  }
 }
