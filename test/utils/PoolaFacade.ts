@@ -54,8 +54,8 @@ export class PoolaFacade {
     return token;
   }
 
-  async addPool(poolName: string, tokenAddress: string, withdrawMultiplier: number): Promise<Pool> {
-    await this._obj.functions.createPool(poolName, tokenAddress, withdrawMultiplier);
+  async addPool(poolName: string, tokenAddress: string, pricePerWei: number): Promise<Pool> {
+    await this._obj.functions.createPool(poolName, tokenAddress, pricePerWei);
     return await this.getPool(poolName);
   }
 
