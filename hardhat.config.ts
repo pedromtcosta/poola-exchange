@@ -41,5 +41,11 @@ function cast<T>(arr: any[]): T[] {
  */
 module.exports = {
   solidity: "0.7.3",
+  networks: {
+    ropsten: {
+      url: "https://ropsten.infura.io/v3/dedc126f2fcf4c43a1d3e522fc527e54",
+      accounts: [],
+    }
+  }
 };
 

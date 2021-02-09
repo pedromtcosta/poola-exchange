@@ -4,7 +4,10 @@ async function main() {
   await run("compile");
   
   const ERC20Factory = await ethers.getContractFactory("ERC20Factory");
-  const erc20Factory = await ERC20Factory.deploy(["0x67C483918F8221BADa4B12B8c01b427338F6b779"]);
+  const erc20Factory = await ERC20Factory.deploy([
+    "0xbB34a7E2A070eC193cDdA2df52c2a912f54Ee087",
+    "0x5782033F831C661D49cc288e9DFFf02452c93c6F",
+    "0x281b1FE6C3f29c729bA7D7a6fcee7a9A043Fe118"]);
 
   await erc20Factory.deployed();
 
