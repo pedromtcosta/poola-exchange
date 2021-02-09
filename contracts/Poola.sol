@@ -42,16 +42,14 @@ contract Poola {
     poolNames.push(_poolName);
   }
 
-  function deposit(string memory _pool, uint256 _amount) public payable {
+  function deposit(string memory _pool, uint256 _amount) public {
     Pool storage pool = pools[_pool];
     require(pool.owner != address(0), "Cannot deposit to inexistent pool");
     require(pool.owner == msg.sender, "Cannot someone else's pool");
     require(_amount >= pool.pricePerWei, "Cannot deposit less than the pool's pricePerWei");
     require(_amount % pool.pricePerWei == 0, "Deposit amount should be divisible by pool's pricePerWei");
-    require(_amount.div(pool.pricePerWei) == msg.value, "The paid amount should be equal to amount / pricePerWei");
 
     pool.size = pool.size.add(_amount);
-    allowances[msg.sender] = allowances[msg.sender].add(msg.value);
 
     IERC20 token = factory.getErc20(pool.erc20Address);
     require(token.transferFrom(msg.sender, address(this), _amount), "The token trasnfer failed");

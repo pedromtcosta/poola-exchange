@@ -48,9 +48,7 @@ describe("Poola", function () {
       const pool = await facade.addPool(poolName, token.address, 100);
 
       await token.approve(facade.obj.address, 1000);
-      await facade.obj.functions.deposit(poolName, 1000, {
-        value: 10
-      });
+      await facade.obj.functions.deposit(poolName, 1000);
 
       expect(await token.balanceOf(facade.obj.address)).to.equal(1000);
     });
@@ -64,9 +62,7 @@ describe("Poola", function () {
 
       await token.mock.transferFrom.returns(true);
 
-      await facade.obj.functions.deposit(poolName, 1000, {
-        value: 10
-      });
+      await facade.obj.functions.deposit(poolName, 1000);
 
       const pool = await facade.getPool(poolName);
 
@@ -82,55 +78,12 @@ describe("Poola", function () {
 
       await token.mock.transferFrom.returns(true);
 
-      await facade.obj.functions.deposit(poolName, 1000, {
-        value: 10
-      });
-      await facade.obj.functions.deposit(poolName, 1000, {
-        value: 10
-      });
+      await facade.obj.functions.deposit(poolName, 1000);
+      await facade.obj.functions.deposit(poolName, 1000);
 
       const pool = await facade.getPool(poolName);
 
       expect(pool.size).to.equal(2000);
-    })
-
-    it("should add pool owner's allowance", async function() {
-      const poolName = "TestPool";
-
-      const facade = await PoolaFacade.init();
-      const token = await facade.addToken();
-      await facade.addPool(poolName, token.address, 100);
-
-      await token.mock.transferFrom.returns(true);
-
-      await facade.obj.functions.deposit(poolName, 1000, {
-        value: 10
-      });
-
-      const allowance = await facade.getAllowance(facade.accounts[0].address);
-
-      expect(allowance).to.equal(10);
-    });
-
-    it("should increase pool owner's allowance", async function() {
-      const poolName = "TestPool";
-
-      const facade = await PoolaFacade.init();
-      const token = await facade.addToken();
-      await facade.addPool(poolName, token.address, 100);
-
-      await token.mock.transferFrom.returns(true);
-
-      await facade.obj.functions.deposit(poolName, 1000, {
-        value: 10
-      });
-      await facade.obj.functions.deposit(poolName, 1000, {
-        value: 10
-      });
-
-      const allowance = await facade.getAllowance(facade.accounts[0].address);
-
-      expect(allowance).to.equal(20);
     });
 
     describe("constraints", function() {
@@ -173,18 +126,6 @@ describe("Poola", function () {
         await expect(facade.obj.functions.deposit(tokenPoolName, 102))
           .to.be.revertedWith("Deposit amount should be divisible by pool's pricePerWei");
       });
-
-      it("should not alllow deposit if paid amount is not equal amount / pricePerWei", async function() {
-        const tokenPoolName = "tokenPool";
-        const pricePerWei = 100;
-
-        const facade = await PoolaFacade.init();
-        const token = await facade.addToken();
-        const pool = await facade.addPool(tokenPoolName, token.address, pricePerWei);
-
-        await expect(facade.obj.functions.deposit(tokenPoolName, 10000, {value: 10000}))
-          .to.be.revertedWith("The paid amount should be equal to amount / pricePerWei");
-      });
     });
   });
 
@@ -204,7 +145,7 @@ describe("Poola", function () {
         await token.mock.transferFrom.returns(true);
         await facade.addPool(poolName, token.address, 100);
 
-        await facade.obj.functions.deposit(poolName, 1000, {value: 10});
+        await facade.obj.functions.deposit(poolName, 1000);
 
         await expect(facade.obj.functions.buyFromPool(poolName, 2000, {value: 20}))
           .to.be.revertedWith("The amount cannot be greater than the pool size");
@@ -229,7 +170,7 @@ describe("Poola", function () {
         await token.mock.transferFrom.returns(true);
         const pool = await facade.addPool(poolName, token.address, 100);
 
-        await facade.obj.functions.deposit(poolName, 1000, {value: 10});
+        await facade.obj.functions.deposit(poolName, 1000);
 
         await expect(facade.obj.functions.buyFromPool(poolName, 50))
           .to.be.revertedWith("The amount is not a multiplier of the pool's pricePerWei");
@@ -243,7 +184,7 @@ describe("Poola", function () {
         await token.mock.transferFrom.returns(true);
         const pool = await facade.addPool(poolName, token.address, 100);
 
-        await facade.obj.functions.deposit(poolName, 1000, {value: 10});
+        await facade.obj.functions.deposit(poolName, 1000);
 
         await expect(facade.obj.functions.buyFromPool(poolName, 150))
           .to.be.revertedWith("The amount is not a multiplier of the pool's pricePerWei");
@@ -257,7 +198,7 @@ describe("Poola", function () {
         await token.mock.transferFrom.returns(true);
         const pool = await facade.addPool(poolName, token.address, 100);
 
-        await facade.obj.functions.deposit(poolName, 1000, {value: 10});
+        await facade.obj.functions.deposit(poolName, 1000);
 
         await expect(facade.execAs(1, x => x.functions.buyFromPool(poolName, 1000)))
           .to.be.revertedWith("You need to have allowance to buy without transfering Wei");
@@ -271,7 +212,7 @@ describe("Poola", function () {
         await token.mock.transferFrom.returns(true);
         const pool = await facade.addPool(poolName, token.address, 100);
 
-        await facade.obj.functions.deposit(poolName, 1000, {value: 10});
+        await facade.obj.functions.deposit(poolName, 1000);
 
         await expect(facade.obj.functions.buyFromPool(poolName, 1000, {value: 5}))
           .to.be.revertedWith("The paid value doesn't match the requested buying amount");
@@ -285,7 +226,7 @@ describe("Poola", function () {
         await token.mock.transferFrom.returns(true);
         const pool = await facade.addPool(poolName, token.address, 100);
 
-        await facade.obj.functions.deposit(poolName, 1000, {value: 10});
+        await facade.obj.functions.deposit(poolName, 1000);
 
         await expect(facade.obj.functions.buyFromPool(poolName, 1000, {value: 100}))
           .to.be.revertedWith("The paid value doesn't match the requested buying amount");
@@ -301,9 +242,7 @@ describe("Poola", function () {
         await facade.addPool(poolName, token.address, 100);
   
         await token.approve(facade.obj.address, 1000);
-        await facade.obj.functions.deposit(poolName, 1000, {
-          value: 10
-        });
+        await facade.obj.functions.deposit(poolName, 1000);
   
         await facade.execAs(1, x => x.functions.buyFromPool(poolName, 500, {
           value: 5
@@ -320,9 +259,7 @@ describe("Poola", function () {
         await facade.addPool(poolName, token.address, 100);
   
         await token.approve(facade.obj.address, 1000);
-        await facade.obj.functions.deposit(poolName, 1000, {
-          value: 10
-        });
+        await facade.obj.functions.deposit(poolName, 1000);
   
         await facade.execAs(1, x => x.functions.buyFromPool(poolName, 500, {
           value: 5
@@ -340,16 +277,14 @@ describe("Poola", function () {
         await facade.addPool(poolName, token.address, 100);
   
         await token.approve(facade.obj.address, 1000);
-        await facade.obj.functions.deposit(poolName, 1000, {
-          value: 10
-        });
+        await facade.obj.functions.deposit(poolName, 1000);
   
         await facade.execAs(1, x => x.functions.buyFromPool(poolName, 500, {
           value: 5
         }));
   
         const allowance = await facade.getAllowance(facade.accounts[0].address);
-        expect(allowance).to.equal(15);
+        expect(allowance).to.equal(5);
       });
     });
 
@@ -368,14 +303,12 @@ describe("Poola", function () {
         await tokenA.approve(facade.obj.address, 1000);
         await tokenB.approve(facade.obj.address, 1000);
 
-        await facade.execAs(0, x => x.functions.deposit(poolNameA, 1000, {
-          value: 10
-        }));
+        await facade.execAs(0, x => x.functions.deposit(poolNameA, 1000));
+        await facade.execAs(1, x => x.functions.deposit(poolNameB, 1000));
 
-        await facade.execAs(1, x => x.functions.deposit(poolNameB, 1000, {
-          value: 10
+        await facade.execAs(1, x => x.functions.buyFromPool(poolNameA, 500, {
+          value: 5
         }));
-
         await facade.execAs(0, x => x.functions.buyFromPool(poolNameB, 500));
 
         expect(await tokenB.balanceOf(facade.accounts[0].address)).to.equal(500);
@@ -395,18 +328,16 @@ describe("Poola", function () {
         await tokenA.approve(facade.obj.address, 1000);
         await tokenB.approve(facade.obj.address, 1000);
 
-        await facade.execAs(0, x => x.functions.deposit(poolNameA, 1000, {
-          value: 10
-        }));
+        await facade.execAs(0, x => x.functions.deposit(poolNameA, 1000));
+        await facade.execAs(1, x => x.functions.deposit(poolNameB, 1000));
 
-        await facade.execAs(1, x => x.functions.deposit(poolNameB, 1000, {
-          value: 10
+        await facade.execAs(1, x => x.functions.buyFromPool(poolNameA, 500, {
+          value: 5
         }));
-
         await facade.execAs(0, x => x.functions.buyFromPool(poolNameB, 500));
 
         const allowance = await facade.getAllowance(facade.accounts[0].address);
-        expect(allowance).to.equal(5);
+        expect(allowance).to.equal(0);
       });
     });
   });
@@ -418,9 +349,13 @@ describe("Poola", function () {
       const facade = await PoolaFacade.init();
       const token = await facade.addToken();
       await token.mock.transferFrom.returns(true);
+      await token.mock.transfer.returns(true);
       await facade.addPool(poolName, token.address, 100);
 
-      await facade.obj.functions.deposit(poolName, 1000, {value: 10});
+      await facade.obj.functions.deposit(poolName, 1000);
+      await facade.execAs(1, x => x.functions.buyFromPool(poolName, 1000, {
+        value: 10
+      }));
 
       await expect(facade.obj.functions.withdraw(11))
         .to.be.revertedWith("Cannot withdraw more than allowance");
@@ -433,9 +368,13 @@ describe("Poola", function () {
       const facade = await PoolaFacade.init();
       const token = await facade.addToken();
       await token.mock.transferFrom.returns(true);
+      await token.mock.transfer.returns(true);
       await facade.addPool(poolName, token.address, 100);
 
-      await facade.obj.functions.deposit(poolName, 1000, {value: 10});
+      await facade.obj.functions.deposit(poolName, 1000);
+      await facade.execAs(1, x => x.functions.buyFromPool(poolName, 1000, {
+        value: 10
+      }));
       
       const previousContractBalance = await facade.obj.provider.getBalance(facade.obj.address);
       const previousSenderBalance = await facade.obj.provider.getBalance(facade.accounts[0].address);
@@ -457,9 +396,13 @@ describe("Poola", function () {
       const facade = await PoolaFacade.init();
       const token = await facade.addToken();
       await token.mock.transferFrom.returns(true);
+      await token.mock.transfer.returns(true);
       await facade.addPool(poolName, token.address, 100);
 
-      await facade.obj.functions.deposit(poolName, 1000, {value: 10});
+      await facade.obj.functions.deposit(poolName, 1000);
+      await facade.execAs(1, x => x.functions.buyFromPool(poolName, 1000, {
+        value: 10
+      }));
       
       const withdrawAmount = 5;
       await facade.obj.functions.withdraw(withdrawAmount);
