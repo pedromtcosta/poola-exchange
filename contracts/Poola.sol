@@ -21,10 +21,10 @@ contract Poola {
   mapping(string => Pool) public pools;
   string[] public poolNames;
 
-  event NewPool(string _poolName, uint64 _poolsCount);
-  event Deposit(string _poolName, uint256 _amount);
-  event Buy(string _poolName, uint256 _amount);
-  event Withdraw(address _recipient, uint256 _amount);
+  event NewPool(string poolName, uint64 poolsCount);
+  event Deposit(string poolName, uint256 amount);
+  event Buy(string poolName, uint256 amount);
+  event Withdraw(address recipient, uint256 amount);
 
   IERC20Factory factory;
   constructor(IERC20Factory _factory) {
