@@ -19,14 +19,17 @@ contract Poola {
 
   mapping(address => uint256) public allowances;
   mapping(string => Pool) public pools;
+  string[] public poolNames;
 
   IERC20Factory factory;
   constructor(IERC20Factory _factory) {
     factory = _factory;
   }
 
-  function createPool(string memory _pool, address _erc20Address, uint256 _pricePerWei) public {
-    Pool storage pool = pools[_pool];
+  function getPoolsCount() public view returns(uint64 count) {
+    return uint64(poolNames.length);
+  }
+
   function createPool(string memory _poolName, address _erc20Address, uint256 _pricePerWei) public {
     Pool storage pool = pools[_poolName];
     require(pool.owner == address(0), "A pool with the same name has already been created");
@@ -36,6 +39,7 @@ contract Poola {
     pool.erc20Address = _erc20Address;
     pool.owner = msg.sender;
     pool.pricePerWei = _pricePerWei;
+    poolNames.push(_poolName);
   }
 
   function deposit(string memory _pool, uint256 _amount) public payable {
