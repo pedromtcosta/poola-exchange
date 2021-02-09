@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "contracts/utils/ERC20Factory.sol";
 
 struct Pool {
+  string name;
   address erc20Address;
   address owner;
   uint256 pricePerWei;
@@ -26,9 +27,12 @@ contract Poola {
 
   function createPool(string memory _pool, address _erc20Address, uint256 _pricePerWei) public {
     Pool storage pool = pools[_pool];
+  function createPool(string memory _poolName, address _erc20Address, uint256 _pricePerWei) public {
+    Pool storage pool = pools[_poolName];
     require(pool.owner == address(0), "A pool with the same name has already been created");
     require(_pricePerWei > 0, "_pricePerWei should be greater than 0");
 
+    pool.name = _poolName;
     pool.erc20Address = _erc20Address;
     pool.owner = msg.sender;
     pool.pricePerWei = _pricePerWei;
