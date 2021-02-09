@@ -17,7 +17,7 @@ contract ERC20Factory is IERC20Factory {
   }
 
   function getErc20(address _erc20TokenAddress) public view override returns (IERC20 erc20) {
-    require(whitelist[_erc20TokenAddress]);
+    require(whitelist[_erc20TokenAddress], "The token is not whitelisted");
     return IERC20(_erc20TokenAddress);
   }
 }

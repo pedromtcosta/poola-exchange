@@ -46,7 +46,7 @@ contract Poola {
     allowances[msg.sender] = allowances[msg.sender].add(msg.value);
 
     IERC20 token = factory.getErc20(pool.erc20Address);
-    require(token.transferFrom(msg.sender, address(this), _amount));
+    require(token.transferFrom(msg.sender, address(this), _amount), "The token trasnfer failed");
   }
 
   function buyFromPool(string memory _pool, uint256 _amount) public payable {
