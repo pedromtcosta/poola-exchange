@@ -16,14 +16,13 @@ task("accounts", "Prints the list of accounts", async (args, hre) => {
 task("deposit", "Deposits an amount of ERC20 to a pool")
   .addParam("poola", "The address of the Poola contract")
   .addParam("pool", "The pool name")
-  .addParam("token", "The address of the token to deposit")
   .addParam("amount", "The amount to deposit")
   .addParam("wei", "How much Wei the deposited amount is worth")
   .setAction(async (args, hre) => {
     const accounts = await hre.ethers.getSigners();
     const poolaContract = new hre.ethers.Contract(args.poola, cast(poola.abi), accounts[0]);
 
-    await poolaContract.deposit(args.pool, args.token, args.amount, {
+    await poolaContract.deposit(args.pool, args.amount, {
       value: args.wei
     });
     const size = await poolaContract.getPoolSize(args.pool);
