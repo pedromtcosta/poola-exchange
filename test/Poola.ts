@@ -16,6 +16,17 @@ describe("Poola", function () {
       expect(pool.size.toNumber()).to.be.equal(0);
       expect(pool.pricePerWei.toNumber()).to.be.equal(100);
     });
+
+    it("should emit new pool", async function() {
+      const tokenPoolName = "tokenPool";
+  
+      const facade = await PoolaFacade.init();
+      const token = await facade.addToken();
+      
+      expect(await facade.obj.functions.createPool(tokenPoolName, token.address, 100))
+        .to.emit(facade.obj, "NewPool")
+        .withArgs(tokenPoolName, 1);
+    });
   
     it("should not allow to create pool with same name", async function() {
       const tokenPoolName = "tokenPool";
@@ -51,6 +62,19 @@ describe("Poola", function () {
       await facade.obj.functions.deposit(poolName, 1000);
 
       expect(await token.balanceOf(facade.obj.address)).to.equal(1000);
+    });
+
+    it("should emit deposit event", async function() {
+      const poolName = "TestPool";
+
+      const facade = await PoolaFacade.init();
+      const token = await facade.addToken();
+      await token.mock.transferFrom.returns(true);
+      await facade.addPool(poolName, token.address, 100);
+
+      expect(await facade.obj.functions.deposit(poolName, 1000))
+        .to.emit(facade.obj, "Deposit")
+        .withArgs(poolName, 1000);
     });
 
     it("should set pool size", async function() {
@@ -286,6 +310,23 @@ describe("Poola", function () {
         const allowance = await facade.getAllowance(facade.accounts[0].address);
         expect(allowance).to.equal(5);
       });
+
+      it("should emit Buy event", async function() {
+        const poolName = "TestPool";
+  
+        const facade = await PoolaFacade.init();
+        const token = await facade.addToken();
+        token.mock.transferFrom.returns(true);
+        token.mock.transfer.returns(true);
+        await facade.addPool(poolName, token.address, 100);
+  
+        await facade.obj.functions.deposit(poolName, 1000);
+  
+        facade.execAllAs(1);
+        expect(await facade.obj.functions.buyFromPool(poolName, 500, {
+          value: 5
+        })).to.emit(facade.obj, "Buy").withArgs(poolName, 500);
+      });
     });
 
     describe("buying with allowance", function() {
@@ -361,7 +402,6 @@ describe("Poola", function () {
         .to.be.revertedWith("Cannot withdraw more than allowance");
     });
 
-
     it("should transfer Wei from contract to sender", async function() {
       const poolName = "TestPool";
 
@@ -410,6 +450,27 @@ describe("Poola", function () {
       const allowance = await facade.getAllowance(facade.accounts[0].address);
 
       expect(allowance).to.equal(5);
+    });
+
+    it("should emit withdraw event", async function() {
+      const poolName = "TestPool";
+
+      const facade = await PoolaFacade.init();
+      const token = await facade.addToken();
+      await token.mock.transferFrom.returns(true);
+      await token.mock.transfer.returns(true);
+      await facade.addPool(poolName, token.address, 100);
+
+      await facade.obj.functions.deposit(poolName, 1000);
+      await facade.execAs(1, x => x.functions.buyFromPool(poolName, 1000, {
+        value: 10
+      }));
+      
+      const withdrawAmount = 5;
+      
+      expect(await facade.obj.functions.withdraw(withdrawAmount))
+        .to.emit(facade.obj, "Withdraw")
+        .withArgs(facade.accounts[0].address, withdrawAmount);
     });
   });
 });

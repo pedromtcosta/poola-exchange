@@ -21,6 +21,11 @@ contract Poola {
   mapping(string => Pool) public pools;
   string[] public poolNames;
 
+  event NewPool(string _poolName, uint64 _poolsCount);
+  event Deposit(string _poolName, uint256 _amount);
+  event Buy(string _poolName, uint256 _amount);
+  event Withdraw(address _recipient, uint256 _amount);
+
   IERC20Factory factory;
   constructor(IERC20Factory _factory) {
     factory = _factory;
@@ -40,6 +45,8 @@ contract Poola {
     pool.owner = msg.sender;
     pool.pricePerWei = _pricePerWei;
     poolNames.push(_poolName);
+
+    emit NewPool(_poolName, uint64(poolNames.length));
   }
 
   function deposit(string memory _pool, uint256 _amount) public {
@@ -53,6 +60,8 @@ contract Poola {
 
     IERC20 token = factory.getErc20(pool.erc20Address);
     require(token.transferFrom(msg.sender, address(this), _amount), "The token trasnfer failed");
+
+    emit Deposit(_pool, _amount);
   }
 
   function buyFromPool(string memory _pool, uint256 _amount) public payable {
@@ -77,6 +86,8 @@ contract Poola {
 
     IERC20 token = factory.getErc20(pool.erc20Address);
     require(token.transfer(msg.sender, _amount));
+
+    emit Buy(_pool, _amount);
   }
 
   function withdraw(uint256 _amount) public {
@@ -84,5 +95,7 @@ contract Poola {
     allowances[msg.sender] = allowances[msg.sender].sub(_amount);
     (bool success, ) = msg.sender.call{value:_amount}("");
     require(success, "Transfer failed");
+
+    emit Withdraw(msg.sender, _amount);
   }
 }
