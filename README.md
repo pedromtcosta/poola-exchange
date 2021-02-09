@@ -11,5 +11,12 @@ You can also deposit tokens to an already created pool if you agree with the pri
 
 The withdraw allowance is per pool and it is shared, which means once someone buys tokens from a specific pool anyone that deposited that token to that pool may make use of the allowance, and once they do it, the allowance for the others will decrease. This allowance however is maxed to the amount of tokes which were bought on that pool, so if somone bought 100 of the given token, people can only use up to 100 of their allowance.
 
+### Deployments
+#### Ropsten
+
+ERC20Factory: 0x719769CED9F4f9236e23e8794404982E890090a4
+
+Poola: 0xF129acEb9d8117a1397A61BaC82c2bda83753250
+
 ### Motivation and other things
 I have no ideaif this is a decent model for an exchange. Ideally there should probably be a way the reward people that create liquidity on the pools, but I will think about this some other time, I am creating this project mostly for fun :)
