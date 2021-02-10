@@ -1,22 +1,30 @@
 # Poola Exchange
 
-This is a WIP for a exchange based on liquidity pools. The general idea is that addresses can deposit an amount of a specific [ERC-20](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/) token together with an amount of ETH which represents the same amount of what was deposited of the chosen token and by doing that, they have "withdraw allowances" based on how much of they deposited (both in token and ETH).
+This is a very simplistic exchange for trading [ERC-20](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/) tokens based on pools. Anyone can create a pool and deposit tokens to it. When you create your pool you set a price and the address of the token this pool will receive, then you can start depositing to it. Once people buy tokens from your pool, you get allowance and then you can use this allowance to either withdraw ETH or to buy tokens from other pools.
 
-## General funcioning idea
-Having these liquidity pools is great when the values are coherent, but addresses can try depositing amounts which doesn't correspond to reality in order to take advantage of the allowances. That's why we need some measures to control the prices of the tokens and how much of the allowance an address can withdraw in a specific point.
+### Future work
 
-Basically when you make a deposit, you create a pool which contains the amount of the token you deposited, with a corressponding price for the token**. You also get an allowace for the ETH you deposited, which you can use right away and an allowance for the token you deposited, which gets released for you to use once someone pays the price you set on the pool you created during your deposit.
+This is mainly a study project. In theory, I believe this idea can be functional with some more work. Some things I plan to work on:
+- functions for the pool owners to update their pools;
+- pool owners should get have benefits, which would give them incentive to keep providing liquidity to the contract. How? No clue yet. Help please? :)
 
-You can also deposit tokens to an already created pool if you agree with the price of the token which is set there. Otherwise, you can create a new pool with a price which you think makes more sense for that token.
+### Tech
 
-The withdraw allowance is per pool and it is shared, which means once someone buys tokens from a specific pool anyone that deposited that token to that pool may make use of the allowance, and once they do it, the allowance for the others will decrease. This allowance however is maxed to the amount of tokes which were bought on that pool, so if somone bought 100 of the given token, people can only use up to 100 of their allowance.
+As already stated, this project is mainly a study project. Here you will find what I believe to be a nice overall approach to developing smart contracts with Solidity. The Solidity code is quite simplistic, but I believe you can find some nice ideas about how to architecture the project:
+- "Inversion of Control"-like idea using the IERC20Factory interface inside the main contract
+- ERC20 factory class with whitelisted addresses
+- Overall unit testing with a Facade for simplifying creation of mocks and execution of functions
 
 ### Deployments
-#### Ropsten
 
-ERC20Factory: 0x719769CED9F4f9236e23e8794404982E890090a4
+The contracts cointained here are deployed to the [Ropsten](https://ropsten.etherscan.io) test network under the addresses:
 
-Poola: 0xF129acEb9d8117a1397A61BaC82c2bda83753250
+>Poola: 0x22137554767684F24004579D89ACB8c2E6528A32
 
-### Motivation and other things
-I have no ideaif this is a decent model for an exchange. Ideally there should probably be a way the reward people that create liquidity on the pools, but I will think about this some other time, I am creating this project mostly for fun :)
+>ERC20Factory: 0xc88837C1FDA7a9Bd1D002209280914Df8FBb39C3
+
+### See also
+
+[Poola Exchange App](https://github.com/pedromtcosta/poola-exchange-app): React app for interacting with the Poola contract using Web3
+
+[Incredibly Useful Tokens](https://github.com/pedromtcosta/incredibly-useful-tokens): Repository with tokens deployed to Ropsten for playing around with the contract and the REact app
