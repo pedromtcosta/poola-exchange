@@ -6,7 +6,7 @@ This is a very simplistic exchange for trading [ERC-20](https://ethereum.org/en/
 
 This is mainly a study project. In theory, I believe this idea can be functional with some more work. Some things I plan to work on:
 - functions for the pool owners to update their pools;
-- pool owners should get have benefits, which would give them incentive to keep providing liquidity to the contract. How? No clue yet. Help please? :)
+- pool owners should get some benefits, which would give them incentive to keep providing liquidity to the contract. How? No clue yet. Help please? :)
 
 ### Tech
 
